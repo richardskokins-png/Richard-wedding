@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Friends Included transaction approvals, commissions, allocations, and financial results.">
+  <meta name="theme-color" content="#11192b">
+  <title>Friends Included · Finance desk</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2311192b'/%3E%3Cpath d='M15 17h36v10H27v7h18v10H27v10H15z' fill='%23ff6b5f'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="#overview" aria-label="Friends Included home">
+      <span class="brand-mark" aria-hidden="true">FI</span>
+      <span><strong>Friends Included</strong><small>Finance desk</small></span>
+    </a>
+    <div class="header-actions">
+      <span class="connection-pill" id="connection-pill"><span class="status-dot"></span>Checking connections</span>
+      <label class="role-control" for="role-select">
+        <span>Demonstration role</span>
+        <select id="role-select" aria-label="Demonstration role"></select>
+      </label>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="Primary navigation">
+      <nav>
+        <button class="nav-button active" data-view="overview"><span>01</span>Overview</button>
+        <button class="nav-button" data-view="submit"><span>02</span>New transaction</button>
+        <button class="nav-button" data-view="decisions"><span>03</span>Decisions <b id="decision-count">0</b></button>
+        <button class="nav-button" data-view="records"><span>04</span>Records</button>
+        <button class="nav-button" data-view="setup"><span>05</span>Manager setup</button>
+      </nav>
+      <div class="sidebar-note">
+        <strong>All friendships expire at checkout.</strong>
+        <p>Records do not. Every decision updates the same transaction.</p>
+      </div>
+    </aside>
+
+    <main id="main-content" tabindex="-1">
+      <div id="notice" class="notice" hidden></div>
+
+      <section class="view active" id="view-overview" aria-labelledby="overview-title">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">LIVE FINANCIAL POSITION</p>
+            <h1 id="overview-title">The ceremony is fictional.<br>The numbers are not.</h1>
+          </div>
+          <div class="as-of"><span id="student-name">Student submission</span><small id="updated-at">Updated now</small></div>
+        </div>
+
+        <div class="kpi-grid" id="kpi-grid"></div>
+
+        <div class="dashboard-grid">
+          <section class="panel project-panel" aria-labelledby="project-results-title">
+            <div class="panel-heading">
+              <div><p class="eyebrow">PROJECT PERFORMANCE</p><h2 id="project-results-title">Results by package</h2></div>
+              <span class="small-note">Approved activity only</span>
+            </div>
+            <div id="project-results"></div>
+          </section>
+          <section class="panel" aria-labelledby="commission-title">
+            <div class="panel-heading">
+              <div><p class="eyebrow">COMMISSION EARNED</p><h2 id="commission-title">Sales team</h2></div>
+              <span class="small-note">10% pools</span>
+            </div>
+            <div class="commission-list" id="commission-list"></div>
+          </section>
+        </div>
+
+        <section class="panel queue-panel" aria-labelledby="queue-title">
+          <div class="panel-heading">
+            <div><p class="eyebrow">NEEDS ATTENTION</p><h2 id="queue-title">Pending decisions</h2></div>
+            <button class="text-button" data-go="decisions">Open decision desk →</button>
+          </div>
+          <div id="attention-list"></div>
+        </section>
+      </section>
+
+      <section class="view" id="view-submit" aria-labelledby="submit-title">
+        <div class="page-heading compact">
+          <div><p class="eyebrow">NEW TRANSACTION</p><h1 id="submit-title">Report what happened.</h1></div>
+          <p class="heading-copy" id="submit-role-copy"></p>
+        </div>
+        <div class="form-layout">
+          <form class="panel form-panel" id="sale-form">
+            <div class="form-heading"><span class="form-icon">S</span><div><h2>Sale</h2><p>Saved pending; commissions count after approval.</p></div></div>
+            <div class="form-grid">
+              <label>Reference<input name="ref" placeholder="S06" maxlength="20" required></label>
+              <label>Customer<input name="customer" placeholder="Customer name" required></label>
+              <label>Project<select name="project" required><option value="A">A · Respectable Relatives</option><option value="B">B · Drunk University Friends</option></select></label>
+              <label>Amount (€)<input name="amount" type="number" min="0.01" step="0.01" placeholder="0.00" required></label>
+              <label class="wide">Description<textarea name="description" rows="3" placeholder="Services delivered" required></textarea></label>
+            </div>
+            <fieldset>
+              <legend>Proposed commission split <span id="split-total">100%</span></legend>
+              <div class="split-grid">
+                <label>Richard %<input name="richard" type="number" min="0" max="100" step="0.01" value="34" required></label>
+                <label>Anastasia %<input name="anastasia" type="number" min="0" max="100" step="0.01" value="33" required></label>
+                <label>Jean-Claude %<input name="jean-claude" type="number" min="0" max="100" step="0.01" value="33" required></label>
+              </div>
+            </fieldset>
+            <button class="primary-button" type="submit">Save sale for approval</button>
+          </form>
+
+          <form class="panel form-panel" id="expense-form">
+            <div class="form-heading"><span class="form-icon">E</span><div><h2>Expense</h2><p>Already paid; it reduces company result immediately.</p></div></div>
+            <div class="form-grid">
+              <label>Reference<input name="ref" placeholder="E08" maxlength="20" required></label>
+              <label>Amount (€)<input name="amount" type="number" min="0.01" step="0.01" placeholder="0.00" required></label>
+              <label>Category<select name="category" required><option>Materials</option><option>Travel</option><option>Other</option></select></label>
+              <label>Proposed allocation<select name="proposedAllocation" required><option value="A">A · Respectable Relatives</option><option value="B">B · Drunk University Friends</option><option>Company overhead</option></select></label>
+              <label class="wide">Description<textarea name="description" rows="3" placeholder="What was purchased" required></textarea></label>
+            </div>
+            <button class="primary-button" type="submit">Record expense</button>
+          </form>
+          <div class="panel locked-panel" id="locked-submit" hidden><span>Submission unavailable</span><h2>This role does not report routine transactions.</h2><p>Choose a salesperson to report a sale or Kevin to report an expense.</p></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-decisions" aria-labelledby="decisions-title">
+        <div class="page-heading compact">
+          <div><p class="eyebrow">MANAGER DECISIONS</p><h1 id="decisions-title">Approve once. Keep the trail.</h1></div>
+          <p class="heading-copy">Original proposals stay visible beside every final decision.</p>
+        </div>
+        <div id="decision-list" class="decision-list"></div>
+      </section>
+
+      <section class="view" id="view-records" aria-labelledby="records-title">
+        <div class="page-heading compact">
+          <div><p class="eyebrow">SOURCE RECORDS</p><h1 id="records-title">Every transaction, one row.</h1></div>
+          <div class="segmented" role="group" aria-label="Record type"><button class="active" data-record-filter="all">All</button><button data-record-filter="sale">Sales</button><button data-record-filter="expense">Expenses</button></div>
+        </div>
+        <section class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>Ref</th><th>Type</th><th>Owner</th><th>Details</th><th>Amount</th><th>Proposal → decision</th><th>Status</th><th>Delivery</th></tr></thead><tbody id="records-body"></tbody></table></div></section>
+      </section>
+
+      <section class="view" id="view-setup" aria-labelledby="setup-title">
+        <div class="page-heading compact">
+          <div><p class="eyebrow">MANAGER SETUP</p><h1 id="setup-title">Connect the people and the pipes.</h1></div>
+          <p class="heading-copy">Server-side credentials stay outside this page and the repository.</p>
+        </div>
+        <div class="setup-grid">
+          <section class="panel" aria-labelledby="connections-title"><div class="panel-heading"><div><p class="eyebrow">CONNECTIONS</p><h2 id="connections-title">Service status</h2></div></div><div id="service-status" class="service-list"></div></section>
+          <form class="panel form-panel" id="telegram-link-form">
+            <div class="form-heading"><span class="form-icon">T</span><div><h2>Link Telegram</h2><p>The employee first sends <code>/whoami</code> to the bot.</p></div></div>
+            <label>Employee<select name="employeeId" id="telegram-employee"></select></label>
+            <label>Telegram user ID<input name="telegramUserId" inputmode="numeric" required></label>
+            <label>Telegram chat ID<input name="telegramChatId" inputmode="numeric" required></label>
+            <button class="primary-button" type="submit">Save Telegram link</button>
+          </form>
+          <form class="panel form-panel" id="webhook-form">
+            <div class="form-heading"><span class="form-icon">W</span><div><h2>Activate bot webhook</h2><p>Run once after the Vercel deployment is live.</p></div></div>
+            <label>Public application URL<input name="appUrl" type="url" placeholder="https://project.vercel.app" required></label>
+            <button class="secondary-button" type="submit">Activate webhook</button>
+          </form>
+          <section class="panel checklist"><p class="eyebrow">SUBMISSION LINKS</p><h2>Instructor access</h2><div id="submission-links"></div></section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="/app.mjs"></script>
+</body>
+</html>
