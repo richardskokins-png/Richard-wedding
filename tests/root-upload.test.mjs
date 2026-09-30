@@ -9,7 +9,7 @@ const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 test("the browser entry resolves when only repository-root files are uploaded", () => {
   const entry = fs.readFileSync(path.join(projectRoot, "app.mjs"), "utf8");
   const imports = [...entry.matchAll(/\bfrom\s+["'](\.\/[^"']+)["']/g)].map((match) => match[1]);
-  assert.deepEqual(imports.sort(), ["./business.mjs", "./fixtures.mjs"]);
+  assert.deepEqual(imports.sort(), ["./business.mjs", "./fixtures.mjs", "./submission.mjs"]);
   for (const specifier of imports) {
     const target = path.resolve(projectRoot, specifier);
     assert.equal(path.dirname(target), projectRoot, `${specifier} must stay in the repository root`);
