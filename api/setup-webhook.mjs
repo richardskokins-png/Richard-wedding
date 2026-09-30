@@ -1,6 +1,7 @@
 import { requireRole, RuleError } from "../business.mjs";
 import { handleError, method, roleIdFrom, send } from "./_lib/http.mjs";
 import { getEmployee } from "./_lib/repository.mjs";
+import { SUBMISSION } from "../submission.mjs";
 
 export default async function handler(req, res) {
   if (!method(req, res, ["POST"])) return;
@@ -8,7 +9,8 @@ export default async function handler(req, res) {
     const manager = await getEmployee(roleIdFrom(req));
     requireRole(manager, ["manager"], "configure the Telegram webhook");
     if (!process.env.TELEGRAM_BOT_TOKEN || !process.env.TELEGRAM_WEBHOOK_SECRET) throw new RuleError("Telegram environment values are incomplete.", "SETUP_REQUIRED", 503);
-    const appUrl = String(req.body?.appUrl || process.env.APP_URL || "").replace(/\/$/, "");
+    const appUrl = String(process.env.APP_URL || SUBMISSION.appUrl).replace(/\/$/, "");
+    if (req.body?.appUrl && String(req.body.appUrl).replace(/\/$/, "") !== appUrl) throw new RuleError("The webhook can only use the owner's configured public homework URL.");
     if (!/^https:\/\//.test(appUrl)) throw new RuleError("Enter the public HTTPS Vercel URL.");
     const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/setWebhook`, {
       method: "POST",
