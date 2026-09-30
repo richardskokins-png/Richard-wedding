@@ -11,6 +11,7 @@ import {
   validateSaleInput
 } from "./business.mjs";
 import { referenceState } from "./fixtures.mjs";
+import { SUBMISSION } from "./submission.mjs";
 
 const DEMO_STORAGE_KEY = "friends-included-reference-state-v2";
 const roleSelect = document.querySelector("#role-select");
@@ -25,14 +26,20 @@ let config = {
   studentName: "",
   githubUrl: "",
   sheetsUrl: "",
-  appUrl: ""
+  appUrl: "",
+  ...SUBMISSION
 };
 let state = loadReferenceState();
+let resetBackup = null;
+const reviewRef = Date.now().toString(36).toUpperCase();
 
 function loadReferenceState() {
   try {
     const saved = JSON.parse(localStorage.getItem(DEMO_STORAGE_KEY));
-    if (saved?.sales && saved?.expenses) return { ...saved, mode: "reference", summary: calculateSummary(saved.sales, saved.expenses) };
+    if (saved?.sales && saved?.expenses) {
+      for (const record of [...saved.sales, ...saved.expenses]) { record.sync_status = "reference"; record.notification_status = "reference"; }
+      return { ...saved, mode: "reference", summary: calculateSummary(saved.sales, saved.expenses) };
+    }
   } catch {}
   return referenceState();
 }
@@ -114,7 +121,7 @@ async function loadConfig() {
 async function loadLiveState() {
   if (!config.backendConfigured) {
     state = loadReferenceState();
-    showNotice("Reference mode shows the assignment’s completed two-test figures. Add the server connections before official submission; Telegram and Sheets actions are not being sent from this preview.");
+    showNotice("Public homework demo: fictional data is saved only in this browser. Live Telegram and Sheets synchronization are pending. Open Reviewer guide for the test steps and Viewer ledger.");
     return;
   }
   state = await api(`/api/state?role=${encodeURIComponent(roleSelect.value)}`);
@@ -125,7 +132,7 @@ function populateRoles() {
   roleSelect.innerHTML = PEOPLE.map((person) => `<option value="${person.id}">${escapeHtml(person.name)}</option>`).join("");
   const savedRole = localStorage.getItem("friends-included-role");
   roleSelect.value = PEOPLE.some((person) => person.id === savedRole) ? savedRole : "svetlana";
-  document.querySelector("#telegram-employee").innerHTML = PEOPLE.map((person) => `<option value="${person.id}">${escapeHtml(person.name)}</option>`).join("");
+  document.querySelector("#telegram-employee").innerHTML = PEOPLE.filter(person => person.role !== "manager").map((person) => `<option value="${person.id}">${escapeHtml(person.name)}</option>`).join("");
 }
 
 function goTo(view) {
@@ -149,7 +156,7 @@ function renderOverview() {
     const pending = own.filter((record) => ["pending", "awaiting_allocation"].includes(record.status)).length;
     const issues = own.filter((record) => record.sync_status === "failed" || record.notification_status === "failed").length;
     document.querySelector("#kpi-grid").innerHTML = [
-      kpi("My submissions", own.length, "Visible only to you and Svetlana", "var(--blue)"),
+      kpi("My submissions", own.length, "Filtered by the selected fictional role", "var(--blue)"),
       kpi("Awaiting decision", pending, "Still open", "var(--amber)"),
       kpi("Delivery issues", issues, issues ? "Svetlana can retry" : "No failed syncs", "var(--coral)"),
       kpi("My reported value", shortMoney(own.reduce((sum, record) => sum + record.amount_cents, 0)), "Submission value, not financial result", "var(--teal)")
@@ -252,7 +259,9 @@ function renderSetup() {
     ["Telegram bot and notifications", config.telegramConfigured],
     ["Vercel public URL", Boolean(config.appUrl)]
   ];
-  document.querySelector("#service-status").innerHTML = statuses.map(([label, ok]) => `<div class="service-row"><span>${label}</span><b class="${ok ? "ok" : ""}">${ok ? "Connected" : "Not configured"}</b></div>`).join("");
+  document.querySelector("#service-status").innerHTML = statuses.map(([label, ok]) => `<div class="service-row"><span>${label}</span><b class="${ok ? "ok" : ""}">${ok ? "Configured" : "Not configured"}</b></div>`).join("");
+  document.querySelector("#telegram-link-form button").disabled = state.mode !== "live" || !config.telegramConfigured;
+  document.querySelector("#webhook-form button").disabled = state.mode !== "live" || !config.telegramConfigured;
   const links = [
     ["Telegram bot", config.telegramBotUsername ? `https://t.me/${config.telegramBotUsername.replace(/^@/, "")}` : ""],
     ["Google Sheets", config.sheetsUrl],
@@ -272,7 +281,18 @@ function renderChrome() {
   document.querySelector('[data-view="setup"]').disabled = false;
   const pill = document.querySelector("#connection-pill");
   pill.classList.toggle("live", state.mode === "live");
-  pill.lastChild.textContent = state.mode === "live" ? " Live services" : " Reference mode";
+  pill.lastChild.textContent = state.mode === "live" ? (config.telegramConfigured && config.sheetsConfigured ? " Live test data" : " Live database · setup incomplete") : " Reference mode";
+}
+
+function renderReview() {
+  document.querySelector("#review-ledger").href = config.sheetsUrl;
+  document.querySelector("#review-mode").textContent = state.mode === "live" ? "Transactions are saved on the homework server. Check delivery status separately in Records." : "Reference mode is available now. You can test entry, approvals, allocations, and totals with fictional data. Live Telegram delivery and automatic Sheets updates are pending owner setup.";
+  document.querySelector("#review-bot-status").textContent = config.telegramConfigured && state.mode === "live" ? "The bot settings are configured. Follow these steps to test the real connection." : "Pending: the owner has not connected a live bot and database. The instructions below explain the future test; Telegram linking is currently disabled.";
+  document.querySelector("#review-sale-command").textContent = `/sale RV-S-${reviewRef} | Alex Example | A | Fictional reviewer sale | 100 | 50/30/20`;
+  document.querySelector("#review-expense-command").textContent = `/expense RV-E-${reviewRef} | Fictional reviewer expense | Other | 10 | Company overhead`;
+  document.querySelector("#reset-demo").disabled = state.mode !== "reference" || config.backendConfigured;
+  document.querySelector("#undo-reset").hidden = !resetBackup;
+  document.querySelector("#reset-note").textContent = state.mode === "reference" ? "Reset restores the original fictional figures in this browser. It does not change Google Sheets or server data. You can undo the most recent reset until you reload." : "Reset is available only for the browser demo. Live records are preserved.";
 }
 
 function render() {
@@ -283,9 +303,11 @@ function render() {
   renderDecisions();
   renderRecords();
   renderSetup();
+  renderReview();
 }
 
 async function submitTransaction(type, input) {
+  if (config.backendConfigured && state.mode !== "live") throw new RuleError("The live database is unavailable. Refresh before submitting; no local replacement was saved.");
   const employee = currentEmployee();
   if (state.mode === "live") {
     const result = await api("/api/transaction", { method: "POST", body: JSON.stringify({ type, roleId: employee.id, ...input }) });
@@ -311,6 +333,7 @@ async function submitTransaction(type, input) {
 }
 
 async function decide(type, ref, decision) {
+  if (config.backendConfigured && state.mode !== "live") throw new RuleError("The live database is unavailable. Refresh before deciding; no local replacement was saved.");
   const manager = currentEmployee();
   requireRole(manager, ["manager"], "approve or allocate transactions");
   if (state.mode === "live") {
@@ -337,6 +360,28 @@ async function decide(type, ref, decision) {
 }
 
 function bindEvents() {
+  window.addEventListener("hashchange", () => {
+    const view = window.location.hash.slice(1);
+    if (["overview", "submit", "decisions", "records", "setup", "review"].includes(view)) goTo(view);
+  });
+  for (const type of ["sale", "expense"]) document.querySelector(`#review-${type}`).addEventListener("click", async () => {
+    roleSelect.value = type === "sale" ? "richard" : "kevin";
+    localStorage.setItem("friends-included-role", roleSelect.value);
+    try {
+      await loadLiveState(); render(); goTo("submit");
+      const form = document.querySelector(`#${type}-form`);
+      const values = type === "sale" ? { ref: `RV-W-${Date.now().toString(36).toUpperCase()}`, customer: "Alex Example", project: "A", description: "Fictional reviewer sale", amount: "100", richard: "50", anastasia: "30", "jean-claude": "20" } : { ref: `RV-X-${Date.now().toString(36).toUpperCase()}`, description: "Fictional reviewer expense", category: "Other", amount: "10", proposedAllocation: "Company overhead" };
+      for (const [key, value] of Object.entries(values)) form.elements.namedItem(key).value = value;
+    } catch (error) { showToast(error.message, true); }
+  });
+  document.querySelector("#reset-demo").addEventListener("click", () => {
+    if (state.mode !== "reference" || config.backendConfigured) return;
+    resetBackup = structuredClone(state); state = referenceState(); saveReferenceState(); render(); showToast("This browser’s demo is reset. Undo is available in Reviewer guide.");
+  });
+  document.querySelector("#undo-reset").addEventListener("click", () => {
+    if (!resetBackup || state.mode !== "reference" || config.backendConfigured) return;
+    state = resetBackup; resetBackup = null; saveReferenceState(); render(); showToast("Your previous demo entries were restored.");
+  });
   document.querySelectorAll(".nav-button").forEach((button) => button.addEventListener("click", () => goTo(button.dataset.view)));
   document.querySelectorAll("[data-go]").forEach((button) => button.addEventListener("click", () => goTo(button.dataset.go)));
   roleSelect.addEventListener("change", async () => {
@@ -397,7 +442,12 @@ function bindEvents() {
   document.querySelector("#telegram-link-form").addEventListener("submit", async (event) => {
     event.preventDefault();
     const values = Object.fromEntries(new FormData(event.currentTarget));
-    try { const result = await api("/api/link-telegram", { method: "POST", body: JSON.stringify({ roleId: roleSelect.value, ...values }) }); showToast(result.message); } catch (error) { showToast(error.message, true); }
+    try {
+      const result = await api("/api/link-telegram", { method: "POST", body: JSON.stringify({ roleId: roleSelect.value, ...values }) });
+      const output = document.querySelector("#telegram-pairing");
+      output.replaceChildren(document.createTextNode(`${result.message} `));
+      const link = document.createElement("a"); link.href = result.url; link.target = "_blank"; link.rel = "noreferrer"; link.textContent = "Open my Telegram linking chat →"; output.append(link);
+    } catch (error) { showToast(error.message, true); }
   });
   document.querySelector("#webhook-form").addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -452,7 +502,8 @@ async function init() {
   await loadConfig();
   try { await loadLiveState(); } catch (error) { state = loadReferenceState(); showNotice(`Live data could not be loaded: ${error.message} Reference mode is shown instead.`); }
   const hash = window.location.hash.replace("#", "");
-  if (["overview", "submit", "decisions", "records", "setup"].includes(hash)) goTo(hash);
+  if (["overview", "submit", "decisions", "records", "setup", "review"].includes(hash)) goTo(hash);
+  else if (window.location.pathname.replace(/\/$/, "") === "/test") goTo("review");
   render();
   registerWebMcp();
 }

@@ -44,5 +44,9 @@ export const REFERENCE_EXPENSES = Object.freeze([
 export function referenceState() {
   const sales = structuredClone(REFERENCE_SALES);
   const expenses = structuredClone(REFERENCE_EXPENSES);
+  for (const record of [...sales, ...expenses]) {
+    record.sync_status = "reference";
+    record.notification_status = "reference";
+  }
   return { mode: "reference", sales, expenses, summary: calculateSummary(sales, expenses) };
 }

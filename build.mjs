@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 
 const root = new URL("./", import.meta.url);
-const browserFiles = ["index.html", "styles.css", "app.mjs", "business.mjs", "fixtures.mjs"];
+const browserFiles = ["index.html", "styles.css", "app.mjs", "business.mjs", "fixtures.mjs", "submission.mjs"];
 const endpoints = ["config", "state", "transaction", "decision", "retry", "link-telegram", "setup-webhook", "telegram-webhook"];
 
 // Fail the build for incomplete uploads instead of publishing broken API routes.

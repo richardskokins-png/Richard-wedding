@@ -214,3 +214,14 @@ code { padding: 2px 5px; border-radius: 4px; background: #eef1f6; font: 12px ui-
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
 }
+/* Self-contained instructor walkthrough. */
+.review-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
+.review-card { padding:26px; min-width:0; }
+.review-card h2 { margin:0 0 16px; font-size:22px; }
+.review-card p,.review-card li { line-height:1.65; }
+.review-card ol { padding-left:22px; }
+.review-card li { margin-bottom:10px; }
+.review-card a { color:var(--blue); overflow-wrap:anywhere; }
+.review-card pre { white-space:pre-wrap; overflow-wrap:anywhere; background:#f2f4f8; padding:14px; border-radius:8px; line-height:1.6; }
+button:disabled { cursor:not-allowed; opacity:.5; }
+@media(max-width:850px) { .review-grid { grid-template-columns:1fr; } }
