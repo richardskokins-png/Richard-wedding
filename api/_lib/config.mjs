@@ -1,4 +1,5 @@
 import { RuleError } from "../../business.mjs";
+import { SUBMISSION } from "../../submission.mjs";
 
 export function requireCoreConfig() {
   const missing = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"].filter((key) => !process.env[key]);
@@ -16,7 +17,7 @@ export function sheetsConfigured() {
 }
 
 export function telegramConfigured() {
-  return Boolean(process.env.TELEGRAM_BOT_TOKEN);
+  return Boolean(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_BOT_USERNAME && process.env.TELEGRAM_WEBHOOK_SECRET);
 }
 
 export function publicConfig() {
@@ -25,9 +26,9 @@ export function publicConfig() {
     sheetsConfigured: sheetsConfigured(),
     telegramConfigured: telegramConfigured(),
     telegramBotUsername: process.env.TELEGRAM_BOT_USERNAME || "",
-    appUrl: process.env.APP_URL || "",
-    studentName: process.env.STUDENT_NAME || "",
-    sheetsUrl: process.env.PUBLIC_GOOGLE_SHEETS_URL || "",
-    githubUrl: process.env.PUBLIC_GITHUB_URL || ""
+    appUrl: process.env.APP_URL || SUBMISSION.appUrl,
+    studentName: process.env.STUDENT_NAME || SUBMISSION.studentName,
+    sheetsUrl: process.env.PUBLIC_GOOGLE_SHEETS_URL || SUBMISSION.sheetsUrl,
+    githubUrl: process.env.PUBLIC_GITHUB_URL || SUBMISSION.githubUrl
   };
 }
