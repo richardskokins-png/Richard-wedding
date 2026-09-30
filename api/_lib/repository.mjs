@@ -46,6 +46,20 @@ export async function listEmployees() {
   return request("employees?select=*&order=role.asc,name.asc");
 }
 
+export async function savePairing(tokenHash, employeeId, expiresAt) {
+  await request(`telegram_link_tokens?expires_at=lt.${encodeURIComponent(new Date().toISOString())}`, { method: "DELETE", prefer: "return=minimal" });
+  return request("telegram_link_tokens", { method: "POST", body: JSON.stringify({ token_hash: tokenHash, employee_id: employeeId, expires_at: expiresAt }), prefer: "return=minimal" });
+}
+
+export async function consumePairing(tokenHash, userId, chatId) {
+  const employeeId = await request("rpc/claim_telegram_link", { method: "POST", body: JSON.stringify({ p_token_hash: tokenHash, p_user_id: userId, p_chat_id: chatId }) });
+  return employeeId ? getEmployee(employeeId) : null;
+}
+
+export async function unlinkTelegram(userId, chatId) {
+  return request("rpc/unlink_telegram_account", { method: "POST", body: JSON.stringify({ p_user_id: userId, p_chat_id: chatId }) });
+}
+
 export async function linkTelegram(employeeId, userId, chatId) {
   await request(`employees?telegram_user_id=eq.${encodeURIComponent(userId)}&id=neq.${encodeURIComponent(employeeId)}`, {
     method: "PATCH",

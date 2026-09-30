@@ -57,7 +57,7 @@ export async function submitSale(input, employee, origin = "website", originChat
     proposed_shares: sale.proposedShares,
     status: "pending",
     origin,
-    origin_chat_id: originChatId,
+    origin_chat_id: originChatId || employee.telegram_chat_id || null,
     sync_status: "pending",
     notification_status: origin === "telegram" ? "pending" : "not_required"
   });
@@ -78,7 +78,7 @@ export async function submitExpense(input, employee, origin = "website", originC
     final_allocation: expense.finalAllocation,
     status: expense.status,
     origin,
-    origin_chat_id: originChatId,
+    origin_chat_id: originChatId || employee.telegram_chat_id || null,
     sync_status: "pending",
     notification_status: origin === "telegram" ? "pending" : "not_required"
   });
@@ -88,9 +88,8 @@ export async function submitExpense(input, employee, origin = "website", originC
 }
 
 async function decisionRecipient(record, employeeId) {
-  if (record.origin_chat_id) return record.origin_chat_id;
-  const employee = await getEmployee(employeeId);
-  return employee?.telegram_chat_id || null;
+  // A later reviewer must never receive another reviewer's notifications.
+  return record.origin_chat_id || null;
 }
 
 export async function approveSale(ref, finalSharesInput, manager) {

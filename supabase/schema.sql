@@ -72,3 +72,39 @@ insert into public.employees (id, name, role) values
   ('jean-claude', 'Jean-Claude Bērziņš', 'salesperson'),
   ('kevin', 'Kevin von Whatever', 'expense_reporter')
 on conflict (id) do update set name = excluded.name, role = excluded.role;
+
+-- Short-lived, single-use account pairing. No identifiers are sent to the UI.
+create table if not exists public.telegram_link_tokens (
+  token_hash text primary key,
+  employee_id text not null references public.employees(id),
+  expires_at timestamptz not null
+);
+alter table public.telegram_link_tokens enable row level security;
+
+create or replace function public.claim_telegram_link(p_token_hash text, p_user_id bigint, p_chat_id bigint)
+returns text language plpgsql security definer set search_path = public as $$
+declare target_employee text;
+begin
+  perform pg_advisory_xact_lock(741930);
+  delete from public.telegram_link_tokens where token_hash = p_token_hash and expires_at > now()
+    returning employee_id into target_employee;
+  if target_employee is null then return null; end if;
+  update public.employees set telegram_user_id = null, telegram_chat_id = null where telegram_user_id = p_user_id;
+  update public.employees set telegram_user_id = p_user_id, telegram_chat_id = p_chat_id where id = target_employee;
+  return target_employee;
+end;
+$$;
+
+create or replace function public.unlink_telegram_account(p_user_id bigint, p_chat_id bigint)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  perform pg_advisory_xact_lock(741930);
+  update public.employees set telegram_user_id = null, telegram_chat_id = null where telegram_user_id = p_user_id;
+  update public.sales set origin_chat_id = null where origin_chat_id = p_chat_id;
+  update public.expenses set origin_chat_id = null where origin_chat_id = p_chat_id;
+end;
+$$;
+revoke all on function public.claim_telegram_link(text, bigint, bigint) from public, anon, authenticated;
+revoke all on function public.unlink_telegram_account(bigint, bigint) from public, anon, authenticated;
+grant execute on function public.claim_telegram_link(text, bigint, bigint) to service_role;
+grant execute on function public.unlink_telegram_account(bigint, bigint) to service_role;

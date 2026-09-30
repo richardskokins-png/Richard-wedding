@@ -32,6 +32,7 @@
         <button class="nav-button" data-view="decisions"><span>03</span>Decisions <b id="decision-count">0</b></button>
         <button class="nav-button" data-view="records"><span>04</span>Records</button>
         <button class="nav-button" data-view="setup"><span>05</span>Manager setup</button>
+        <button class="nav-button" data-view="review"><span>06</span>Reviewer guide</button>
       </nav>
       <div class="sidebar-note">
         <strong>All friendships expire at checkout.</strong>
@@ -41,6 +42,18 @@
 
     <main id="main-content" tabindex="-1">
       <div id="notice" class="notice" hidden></div>
+
+      <section class="view" id="view-review" aria-labelledby="review-title">
+        <div class="page-heading compact"><div><p class="eyebrow">PUBLIC HOMEWORK TEST</p><h1 id="review-title">Review Ričards’s Wedding system.</h1></div><p class="heading-copy">Fictional people and transactions. No Vercel account or password needed.</p></div>
+        <div class="review-grid">
+          <section class="panel review-card"><h2>Start here</h2><p id="review-mode" role="status"></p><p>Use this stable public address for the homework submission:</p><p><a href="https://richard-wedding-six.vercel.app/test">richard-wedding-six.vercel.app/test</a></p><p>Deployment preview links can ask for Vercel access. Return to the public address above if that happens.</p><p><a id="review-ledger" target="_blank" rel="noreferrer">Open the fictional Google Sheets ledger →</a></p><p>The <strong>Reference sales</strong> and <strong>Reference expenses</strong> tabs contain the fixed assignment examples. <strong>Sales</strong> and <strong>Expenses</strong> are reserved for future live tests. Changes in this browser’s Reference mode do not update Sheets.</p></section>
+          <section class="panel review-card"><h2>1. Enter a fictional test transaction</h2><p>Choose Richard in the role menu, then New transaction. The example button fills a unique reference, fictional customer, Project A, €100, and a 50% / 30% / 20% commission split. Press <strong>Save sale for approval</strong>.</p><button class="primary-button" id="review-sale">Fill a sample sale</button><p>Expected: the sale is pending. Approved income and commissions stay unchanged until a manager approves it.</p><p>For an expense, choose Kevin and enter €10 with Company overhead. It reduces company result immediately.</p><button class="secondary-button" id="review-expense">Fill a sample expense</button></section>
+          <section class="panel review-card"><h2>2. Use the manager test controls</h2><ol><li>Choose <strong>Svetlana de Monte Carlo</strong> from the role menu.</li><li>Open <strong>Decisions</strong>, find your unique reference, and approve the sale. You may change the split as long as it totals 100%.</li><li>Open <strong>Records</strong> to compare the original proposal with the final decision.</li><li>Open <strong>Overview</strong>: approving the €100 sale adds €100 income, €10 commission expense, and €90 company result. At 50/30/20, commissions increase by €5, €3, and €2.</li><li>The €10 overhead expense reduces company result by €10. Together the two sample entries increase it by €80.</li></ol><p>These role choices are public homework controls, not production account authentication. Use fictional information only.</p><button class="secondary-button" data-go="decisions">Open decisions</button></section>
+          <section class="panel review-card"><h2>3. Link your Telegram account</h2><p id="review-bot-status"></p><ol><li>When the bot is connected, choose Svetlana → <strong>Manager setup</strong>.</li><li>Choose the fictional employee Richard and press <strong>Create my Telegram link</strong>.</li><li>Open that link in your own private Telegram chat and press <strong>Start</strong>. It expires after 10 minutes and can be used once.</li><li>The bot confirms the fictional role. You do not need to share account IDs, passwords, or bot tokens.</li></ol><p>Send the command below using a fresh reference. Wait for the bot’s confirmation, then approve it as Svetlana on the website. The same reference should appear once in the live Sales tab.</p><pre id="review-sale-command"></pre><p>To test an expense, create another link for Kevin, press Start, and send:</p><pre id="review-expense-command"></pre><p>Send <code>/whoami</code> to check your fictional role or <code>/unlink</code> to remove your account link and saved notification destinations after review. Telegram identifiers remain on the server and never appear in the public ledger.</p></section>
+          <section class="panel review-card"><h2>4. Check delivery and repeat the test</h2><p>With live services configured, <strong>Records</strong> shows Sheets and Telegram delivery status. Svetlana can use <strong>Retry Sheets</strong> or <strong>Retry Telegram</strong> on a failed delivery. Retries keep the transaction reference and accounting totals unchanged.</p><p>In Reference mode, delivery is labelled <strong>reference</strong>. It is not proof of a real message or spreadsheet update. Each browser has its own disposable demo entries.</p><button class="secondary-button" id="reset-demo">Reset this browser’s demo</button> <button class="text-button" id="undo-reset" hidden>Undo reset</button><p id="reset-note"></p></section>
+          <section class="panel review-card"><h2>Reference control figures</h2><p>Before adding your own sample entries: Project A €2,050; Project B €2,180; company result €3,930. Commission totals: Richard €140, Anastasia €175, Jean-Claude €215.</p><p>S05 remains pending and E07 awaits allocation in this baseline. Use your new RV- references for the guided test so the original examples remain easy to compare.</p><p>Real bot delivery and automatic Sheets synchronization remain pending until the owner connects the live services.</p></section>
+        </div>
+      </section>
 
       <section class="view active" id="view-overview" aria-labelledby="overview-title">
         <div class="page-heading">
@@ -144,15 +157,14 @@
         <div class="setup-grid">
           <section class="panel" aria-labelledby="connections-title"><div class="panel-heading"><div><p class="eyebrow">CONNECTIONS</p><h2 id="connections-title">Service status</h2></div></div><div id="service-status" class="service-list"></div></section>
           <form class="panel form-panel" id="telegram-link-form">
-            <div class="form-heading"><span class="form-icon">T</span><div><h2>Link Telegram</h2><p>The employee first sends <code>/whoami</code> to the bot.</p></div></div>
+            <div class="form-heading"><span class="form-icon">T</span><div><h2>Link my Telegram</h2><p>Create a private, single-use link for your own Telegram account. Do not share the link.</p></div></div>
             <label>Employee<select name="employeeId" id="telegram-employee"></select></label>
-            <label>Telegram user ID<input name="telegramUserId" inputmode="numeric" required></label>
-            <label>Telegram chat ID<input name="telegramChatId" inputmode="numeric" required></label>
-            <button class="primary-button" type="submit">Save Telegram link</button>
+            <button class="primary-button" type="submit">Create my Telegram link</button>
+            <p id="telegram-pairing" role="status"></p>
           </form>
           <form class="panel form-panel" id="webhook-form">
             <div class="form-heading"><span class="form-icon">W</span><div><h2>Activate bot webhook</h2><p>Run once after the Vercel deployment is live.</p></div></div>
-            <label>Public application URL<input name="appUrl" type="url" placeholder="https://project.vercel.app" required></label>
+            <label>Public application URL<input name="appUrl" type="url" readonly required></label>
             <button class="secondary-button" type="submit">Activate webhook</button>
           </form>
           <section class="panel checklist"><p class="eyebrow">SUBMISSION LINKS</p><h2>Instructor access</h2><div id="submission-links"></div></section>

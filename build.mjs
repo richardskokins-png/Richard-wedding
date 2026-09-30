@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 
 const root = new URL("./", import.meta.url);
-const browserFiles = ["index.html", "styles.css", "app.mjs", "business.mjs", "fixtures.mjs"];
+const browserFiles = ["index.html", "styles.css", "app.mjs", "business.mjs", "fixtures.mjs", "submission.mjs"];
 const endpoints = ["config", "state", "transaction", "decision", "retry", "link-telegram", "setup-webhook", "telegram-webhook"];
 
 // Fail the build for incomplete uploads instead of publishing broken API routes.
@@ -15,4 +15,6 @@ await fs.mkdir(output, { recursive: true });
 for (const name of browserFiles) {
   await fs.copyFile(new URL(name, root), new URL(name, output));
 }
-console.log(`Built ${browserFiles.length} browser assets; verified ${endpoints.length} API endpoints.`);
+// cleanUrls exposes test.html at /test without an extension-sensitive rewrite.
+await fs.copyFile(new URL("index.html", root), new URL("test.html", output));
+console.log(`Built ${browserFiles.length} browser assets and /test; verified ${endpoints.length} API endpoints.`);
