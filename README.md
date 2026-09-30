@@ -23,9 +23,11 @@ Reference mode is a local preview. It is deliberately labelled and does not clai
 
 ## Important when uploading through GitHub
 
-Upload **all files and folders** from the extracted project. The root files now include `business.mjs` and `fixtures.mjs`, so the visible reference application can build even when GitHub receives only the root files. However, the `api` folder is still required for Supabase, Telegram, and Google Sheets to work; `supabase` contains the database setup and `tests` contains the verification checks.
+Upload **all files and folders** from the extracted project, including `api`, `shared`, `supabase`, and `tests`. The build verifies that every API endpoint and its imports exist, so an incomplete upload fails before it replaces a working deployment.
 
-Before redeploying, confirm the GitHub repository shows `business.mjs`, `fixtures.mjs`, and the `api` folder alongside `app.mjs`.
+Vercel must use the **Other** framework preset, **npm run build** as the build command, and **public** as the output directory. These settings are declared in `vercel.json`. `app.mjs` runs in the browser and must never be selected as a Node server entrypoint: doing so causes `ReferenceError: document is not defined` and HTTP 500 on every page. The build copies only the five browser assets into `public`; Vercel deploys the `api` folder separately as server functions. Do not upload `.env.local`, credentials, `node_modules`, or `.git`.
+
+Before deployment run `npm run check` and `npm run build`. After deployment, verify `/` displays the dashboard, `/app.mjs` is served as JavaScript, and `/api/config` returns JSON. If service credentials have not been configured, the page should open in clearly labelled Reference mode; Supabase, Sheets, and Telegram are not active until their setup below is completed.
 
 ## Connect the live services
 

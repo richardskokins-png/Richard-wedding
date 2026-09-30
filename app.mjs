@@ -358,20 +358,22 @@ function bindEvents() {
   });
   document.querySelector("#sale-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       const record = await submitTransaction("sale", { ref: form.get("ref"), customer: form.get("customer"), project: form.get("project"), description: form.get("description"), amount: form.get("amount"), proposedShares: { richard: Number(form.get("richard")), anastasia: Number(form.get("anastasia")), "jean-claude": Number(form.get("jean-claude")) } });
-      event.currentTarget.reset();
+      formElement.reset();
       document.querySelector("#split-total").textContent = "100%";
       showToast(`${record.ref} saved pending approval.`);
     } catch (error) { showToast(error.message, true); }
   });
   document.querySelector("#expense-form").addEventListener("submit", async (event) => {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     try {
       const record = await submitTransaction("expense", Object.fromEntries(form));
-      event.currentTarget.reset();
+      formElement.reset();
       showToast(`${record.ref} recorded.`);
     } catch (error) { showToast(error.message, true); }
   });
