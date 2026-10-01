@@ -6,9 +6,9 @@ A Vercel-ready implementation of the Day 4 “Wedding Guests for Hire” homewor
 
 Submit **https://richard-wedding-six.vercel.app/test**. This stable production URL opens without a Vercel account. Do not submit a generated preview/deployment URL: Standard Protection can require Vercel team access on those URLs.
 
-The self-contained Reviewer guide includes fictional sample entry buttons, manager approval steps, expected changes to totals, a browser-only reset with undo, and the future Telegram linking procedure. The linked Google Sheets ledger is shared as **Anyone with the link: Viewer**. Its Reference tabs contain fictional assignment examples; Sales and Expenses are reserved for future live synchronization.
+The self-contained Reviewer guide includes fictional sample entry buttons, manager approval steps, expected changes to totals, a browser-only reset with undo, and the Telegram linking procedure. The linked Google Sheets ledger is shared as **Anyone with the link: Viewer**. Its Reference tabs contain fictional assignment examples; Sales and Expenses contain automatically synchronized live homework transactions.
 
-Current scope: the public Reference-mode demo and Viewer ledger are available. Live database, Telegram and Sheets synchronization remain pending owner setup. Reference records explicitly say `reference`, never `delivered` or `synced`. Do not present them as evidence that the real bot was tested. Browser data stays in that browser and does not update the ledger.
+The public homework is connected to its dedicated Supabase database, Telegram bot, and Google Sheets ledger. The working bot is https://t.me/RichardWeddingHomeworkBot. The Reference tabs remain fixed examples; the live tabs record actual submissions and decisions. Offline Reference mode remains clearly labelled and does not update the ledger. Credentials are configured privately in the Vercel production environment.
 
 This is a deliberately public fictional homework system. Anyone can choose the manager role. Never connect a production database or enter real customer data. Server credentials stay in Vercel; public responses and the Google ledger exclude real Telegram identifiers.
 
@@ -42,12 +42,12 @@ Before deployment run `npm run check` and `npm run build`. After deployment, ver
 ## Connect the live services
 
 1. Create a dedicated homework Supabase project, open its SQL editor, and run the full current `supabase/schema.sql`, including the pairing-token table and functions. It stores only fictional accounting data and private Telegram routing identifiers.
-2. Use the linked fictional Google ledger. The empty `Sales` and `Expenses` tabs are ready for live data. Keep the fixed Reference tabs separate.
+2. Use the linked fictional Google ledger. The `Sales` and `Expenses` tabs receive live data. Keep the fixed Reference tabs separate.
 3. Enable the Google Sheets API, create a service account, and share the spreadsheet with its email as Editor.
 4. Create a Telegram bot with BotFather and start a private chat with the bot.
 5. Copy `.env.example` to `.env.local` for local tooling, and add the same values to Vercel project environment variables. Never commit the populated file.
 6. Push this folder to a GitHub repository and import that repository into Vercel.
-7. Set `APP_URL` to the stable public production origin, redeploy, then choose Svetlana → Manager setup → Activate webhook. The endpoint cannot redirect the bot or its webhook secret to a visitor-supplied URL. Both bot token and webhook secret are required before webhook messages are accepted.
+7. Set `APP_URL` to the stable public production origin, redeploy, then choose Svetlana → Manager setup → Activate webhook. This is already activated for the submitted homework. The endpoint cannot redirect the bot or its webhook secret to a visitor-supplied URL. Both bot token and webhook secret are required before webhook messages are accepted.
 8. Choose Svetlana → Manager setup → choose Richard or Kevin → Create my Telegram link. Open the personal link and press Start in a private Telegram chat. Links expire in ten minutes, are stored hashed, and are consumed atomically once. No reviewer shares their account IDs or a secret key.
 9. Send `/whoami` to check the fictional role. Send `/unlink` when finished to erase the account link and stored notification destinations. Accounting records remain fictional and reviewable. Relinking a fictional employee never redirects older submissions to the next reviewer.
 
@@ -78,5 +78,15 @@ Expected final control figures:
 - Give the instructor Viewer access to Google Sheets and access to the GitHub repository.
 - Confirm the site says “Live services,” not “Reference mode.”
 - Verify S01 and E01 preserve their original Telegram chat destination after relinking your Telegram ID.
-- Test a Sheets failure and Telegram failure; retry without duplicate rows or changed totals.
+- If a delivery fails, retry from Records and check the same ledger reference and unchanged accounting totals.
 - Put the single working Vercel URL in your own row of the course spreadsheet.
+
+## Live verification — 1 October 2026
+
+The original S01–S05 and E01–E07 records are now persisted in the homework database and automatically copied to Sales and Expenses. S01 and E01 were entered through the actual Telegram bot; both submission confirmations and manager-decision messages were observed in Telegram. S01's approval reached its original recipient after that account was relinked to Kevin. S02's changed split was approved through the website controls. E02 and E05 preserve their original allocations alongside the manager's corrected allocations.
+
+The live results match the control figures above. S05 remains pending and E07 remains awaiting allocation. All 12 records report Sheets synchronized, with exactly five Sales rows and seven Expenses rows. Original references must be preserved; reviewers should use new RV- references from the public guide. Additional reviewer entries change live totals.
+
+Live checks rejected a duplicate reference (409), an invalid commission split (400), a non-manager decision (403), and an unauthenticated webhook request (403). Repeated approvals, allocations, Sheets copying and Telegram delivery left accounting totals unchanged. A repeated Sheets copy updated the original row. Service outages were not deliberately introduced into the deployed system.
+
+Website sales submitted without a linked Telegram recipient correctly show `no_recipient`; this does not indicate a failed transaction or Sheets copy. To test return messages, link your own Telegram account first and submit through the bot. The public API and ledger exclude private Telegram routing identifiers.

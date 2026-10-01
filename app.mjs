@@ -286,6 +286,10 @@ function renderChrome() {
 
 function renderReview() {
   document.querySelector("#review-ledger").href = config.sheetsUrl;
+  const botLink = document.querySelector("#review-bot");
+  botLink.hidden = !config.telegramBotUsername;
+  if (config.telegramBotUsername) botLink.href = `https://t.me/${config.telegramBotUsername.replace(/^@/, "")}`;
+  document.querySelector("#review-delivery-note").textContent = state.mode === "live" && config.telegramConfigured && config.sheetsConfigured ? "Live service settings are connected. For each test, verify Sheets: synced and Telegram: delivered in Records, then inspect the actual ledger row and bot message. Website entries without a linked Telegram recipient are labelled no recipient." : "Live bot delivery and automatic Sheets synchronization require the owner to finish the service setup. Reference examples are not proof of live delivery.";
   document.querySelector("#review-mode").textContent = state.mode === "live" ? "Transactions are saved on the homework server. Check delivery status separately in Records." : "Reference mode is available now. You can test entry, approvals, allocations, and totals with fictional data. Live Telegram delivery and automatic Sheets updates are pending owner setup.";
   document.querySelector("#review-bot-status").textContent = config.telegramConfigured && state.mode === "live" ? "The bot settings are configured. Follow these steps to test the real connection." : "Pending: the owner has not connected a live bot and database. The instructions below explain the future test; Telegram linking is currently disabled.";
   document.querySelector("#review-sale-command").textContent = `/sale RV-S-${reviewRef} | Alex Example | A | Fictional reviewer sale | 100 | 50/30/20`;
